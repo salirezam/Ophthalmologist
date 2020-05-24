@@ -21,7 +21,7 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Gradle
-      run: ./gradlew clean assembleRelease
+      run: ./gradlew clean assembleDebug
     - name: Create Github Release
       id: create_release
       uses: actions/create-release@v1.0.0
@@ -35,7 +35,7 @@ jobs:
     - name: Publish to github releases
       uses: ncipollo/release-action@v1.6.1
       with:
-        artifacts: "app/build/outputs/apk/release/**"
+        artifacts: "app/build/outputs/apk/debug/**"
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: true
         prerelease: true
