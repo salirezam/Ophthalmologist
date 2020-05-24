@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Ophthalmologist</string>
+    <string name="about">Developed by:\\n\\nS.Alireza.Mohammadi, Software Developer\\n(s.alireza.mohammadi@gmail.com)\\n\\nS.Saeed.Mohammadi, MD, Ophthalmologist\\n(s.saeed.mohammadi@gmail.com)\\n\\nGolshan Latifi, MD, Cornea fellowship\\n(golshanlatifi@yahoo.com)</string>
+    <string name="copyright">Copyright © 2020</string>
 </resources>
