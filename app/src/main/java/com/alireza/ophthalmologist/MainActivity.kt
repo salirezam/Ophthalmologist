@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.transition.Slide
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import com.alireza.colourpicker.R
 
