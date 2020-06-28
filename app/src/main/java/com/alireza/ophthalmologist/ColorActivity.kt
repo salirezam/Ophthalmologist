@@ -1,12 +1,14 @@
 package com.alireza.ophthalmologist
 
 import android.Manifest
-import android.os.Bundle
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
+import android.os.Bundle
 import android.os.Environment
-import android.util.DisplayMetrics
+import android.provider.MediaStore
 import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
@@ -148,7 +150,7 @@ class ColorActivity : AppCompatActivity() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        val photosFolderPath = Environment.getExternalStorageDirectory().toString() + "/ophthalmologist/"
+        val photosFolderPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + "/ophthalmologist/"
         val photosFolder =  File(photosFolderPath)
         if(!photosFolder.exists())
             photosFolder.mkdirs()
@@ -169,12 +171,31 @@ class ColorActivity : AppCompatActivity() {
 
             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                 val savedUri = Uri.fromFile(photoFile)
+
+                saveInGallery(photoFile)
+
                 val msg = "Photo capture succeeded: $savedUri"
                 Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                 Log.d(TAG, msg)
             }
         })
     }
+
+    private fun saveInGallery(photoFile: File){
+        val values = ContentValues()
+        values.put(MediaStore.Images.Media.TITLE, "Ophthalmologist photo")
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Ophthalmologist photo")
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
+        values.put(MediaStore.Images.ImageColumns.BUCKET_ID, photoFile.toString().toLowerCase(Locale.US).hashCode())
+        values.put(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME, photoFile.name.toLowerCase(Locale.US))
+        values.put("_data", photoFile.path)
+
+        val cr: ContentResolver = contentResolver
+        cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+    }
+
 
     fun getOutputDirectory(): File {
         val mediaDir = externalMediaDirs.firstOrNull()?.let {
