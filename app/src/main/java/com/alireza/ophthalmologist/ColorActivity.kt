@@ -148,8 +148,12 @@ class ColorActivity : AppCompatActivity() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
+        val photosFolderPath = Environment.getExternalStorageDirectory().toString() + "/ophthalmologist/"
+        val photosFolder =  File(photosFolderPath)
+        if(!photosFolder.exists())
+            photosFolder.mkdirs()
         // Create timestamped output file to hold the image
-        val photoFile = File(Environment.getExternalStorageDirectory().toString() + "/ophthalmologist/" + SimpleDateFormat(FILENAME_FORMAT, Locale.US
+        val photoFile = File(photosFolderPath + SimpleDateFormat(FILENAME_FORMAT, Locale.US
         ).format(System.currentTimeMillis()) + ".jpg")
 
         // Create output options object which contains file + metadata
