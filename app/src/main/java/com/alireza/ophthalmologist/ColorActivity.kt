@@ -11,6 +11,8 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -25,6 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -92,7 +95,7 @@ class ColorActivity : AppCompatActivity() {
 
             // ImageCapture
             imageCapture = ImageCapture.Builder()
-                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
                     .build()
 
             // ImageAnalysis
@@ -118,7 +121,27 @@ class ColorActivity : AppCompatActivity() {
                 // Bind use cases to camera
                 camera = cameraProvider.bindToLifecycle(
                         this, cameraSelector, preview, imageCapture, imageAnalyzer)
-
+                viewFinder.afterMeasured {
+                    val factory: MeteringPointFactory = SurfaceOrientedMeteringPointFactory(
+                            viewFinder.width.toFloat(), viewFinder.height.toFloat())
+                    val centerWidth = viewFinder.width.toFloat() / 2
+                    val centerHeight = viewFinder.height.toFloat() / 2
+                    //create a point on the center of the view
+                    val autoFocusPoint = factory.createPoint(centerWidth, centerHeight)
+                    try {
+                        camera!!.cameraControl.startFocusAndMetering(
+                                FocusMeteringAction.Builder(
+                                        autoFocusPoint,
+                                        FocusMeteringAction.FLAG_AF
+                                ).apply {
+                                    //auto-focus every 1 seconds
+                                    setAutoCancelDuration(1, TimeUnit.SECONDS)
+                                }.build()
+                        )
+                    } catch (e: CameraInfoUnavailableException) {
+                        Log.d("ERROR", "cannot access camera", e)
+                    }
+                }
                 preview?.setSurfaceProvider(viewFinder.createSurfaceProvider())
             } catch(exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
@@ -248,6 +271,17 @@ class ColorActivity : AppCompatActivity() {
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
                 baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    inline fun View.afterMeasured(crossinline block: () -> Unit) {
+        viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                if (measuredWidth > 0 && measuredHeight > 0) {
+                    viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    block()
+                }
+            }
+        })
     }
 
     /**
